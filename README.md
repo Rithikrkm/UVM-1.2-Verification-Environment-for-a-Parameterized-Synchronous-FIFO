@@ -1,2 +1,331 @@
-# UVM-1.2-Verification-Environment-for-a-Parameterized-Synchronous-FIFO
-Developed using SystemVerilog and Siemens QuestaSim 2025.2, featuring constrained-random stimulus, TLM-based monitor-to-scoreboard communication, and a self-checking queue-based golden reference model.
+# UVM 1.2 Verification Environment for a Parameterized Synchronous FIFO
+
+<p align="center">
+
+![SystemVerilog](https://img.shields.io/badge/SystemVerilog-HDL-blue)
+![UVM](https://img.shields.io/badge/UVM-1.2-green)
+![Simulator](https://img.shields.io/badge/Simulator-Siemens%20QuestaSim%202025.2-orange)
+![License](https://img.shields.io/badge/License-MIT-yellow)
+
+</p>
+
+## Overview
+
+This repository presents a complete **UVM 1.2 verification environment** for a **parameterized synchronous FIFO** designed in **SystemVerilog**.
+
+The project demonstrates the implementation of a reusable verification architecture based on the Universal Verification Methodology (UVM), employing **constrained-random stimulus generation**, **Transaction-Level Modeling (TLM)**, and a **self-checking queue-based scoreboard** for automatic functional verification.
+
+The scoreboard maintains a golden reference model using a SystemVerilog queue and accounts for the DUT's one-cycle read latency by deferring comparisons through a pending-read mechanism, ensuring accurate synchronization between expected and observed outputs.
+
+---
+
+## Key Features
+
+* Parameterized synchronous FIFO RTL
+* UVM 1.2 compliant verification environment
+* Constrained-random transaction generation
+* Self-checking scoreboard
+* Queue-based golden reference model
+* Transaction-Level Modeling (TLM)
+* Analysis Port → Analysis Implementation communication
+* Factory registration for reusable UVM components
+* Virtual interface-based DUT connectivity
+* Simultaneous read/write operation support
+* Modular and reusable verification architecture
+* Clean and well-commented source code
+
+---
+
+## Project Structure
+
+```text
+uvm-fifo-verification/
+
+│
+├── rtl/
+│   └── fifo.sv
+│
+├── tb/
+│   ├── fifo_if.sv
+│   ├── fifo_transaction.sv
+│   ├── fifo_sequence.sv
+│   ├── fifo_sequencer.sv
+│   ├── fifo_driver.sv
+│   ├── fifo_monitor.sv
+│   ├── fifo_scoreboard.sv
+│   ├── fifo_agent.sv
+│   ├── fifo_env.sv
+│   ├── fifo_test.sv
+│   ├── fifo_pkg.sv
+│   └── tb_top.sv
+│
+├── docs/
+│   ├── architecture.png
+│   ├── waveform.png
+│   └── fifo_block_diagram.png
+│
+├── README.md
+├── LICENSE
+└── .gitignore
+```
+
+---
+
+## Device Under Test (DUT)
+
+The DUT is a parameterized synchronous FIFO supporting configurable data width and depth.
+
+### Parameters
+
+| Parameter | Description        |
+| --------- | ------------------ |
+| WIDTH     | FIFO data width    |
+| DEPTH     | FIFO storage depth |
+
+### Interface
+
+| Signal | Description        |
+| ------ | ------------------ |
+| clk    | System clock       |
+| rst    | Asynchronous reset |
+| wr_en  | Write enable       |
+| rd_en  | Read enable        |
+| din    | Input data         |
+| dout   | Output data        |
+| full   | FIFO full flag     |
+| empty  | FIFO empty flag    |
+
+The FIFO supports simultaneous read and write operations while maintaining occupancy using an internal counter.
+
+---
+
+## UVM Verification Architecture
+
+The verification environment follows a modular UVM hierarchy:
+
+* **Test** initializes the verification environment and starts sequences.
+* **Environment** instantiates and connects the Agent and Scoreboard.
+* **Agent** encapsulates the Sequencer, Driver, and Monitor.
+* **Driver** converts sequence items into DUT pin-level activity.
+* **Monitor** passively samples DUT signals and converts them into transactions.
+* **Scoreboard** receives monitored transactions through TLM and validates DUT behavior using a queue-based golden model.
+
+The monitor communicates with the scoreboard through a **UVM Analysis Port**, while the scoreboard receives transactions using a **UVM Analysis Implementation Port**, demonstrating Transaction-Level Modeling (TLM).
+
+---
+
+## Verification Flow
+
+```
+Sequence
+
+↓
+
+Sequencer
+
+↓
+
+Driver
+
+↓
+
+FIFO DUT
+
+↓
+
+Monitor
+
+↓
+
+Analysis Port (TLM)
+
+↓
+
+Scoreboard
+
+↓
+
+Queue-Based Reference Model
+
+↓
+
+Expected vs Actual Comparison
+
+↓
+
+Automatic PASS / FAIL Reporting
+```
+
+---
+
+## Self-Checking Scoreboard
+
+The scoreboard maintains an internal queue representing the expected FIFO contents.
+
+### Write Operation
+
+* Valid write transactions are pushed into the reference queue.
+
+### Read Operation
+
+* Expected data is popped from the queue.
+* Comparison is deferred until the following cycle using a **pending-read mechanism**.
+
+This approach accurately models the DUT's one-cycle read latency and prevents false mismatches.
+
+The verification environment is therefore completely **self-checking**, eliminating the need for manual waveform inspection.
+
+---
+
+## Constrained Random Verification
+
+Transactions are generated using constrained-random stimulus.
+
+The sequence applies weighted randomization to create realistic traffic patterns while ensuring that every generated transaction performs at least one valid FIFO operation.
+
+Example characteristics include:
+
+* Write-heavy traffic generation
+* Random read operations
+* Simultaneous read/write transactions
+* Randomized input data values
+
+---
+
+## Verification Components
+
+### Transaction
+
+Represents a FIFO operation containing:
+
+* Input data
+* Output data
+* Write enable
+* Read enable
+* Full flag
+* Empty flag
+
+---
+
+### Sequence
+
+Generates constrained-random FIFO transactions using weighted distributions.
+
+---
+
+### Sequencer
+
+Controls the flow of sequence items between the Sequence and Driver.
+
+---
+
+### Driver
+
+Applies generated transactions to the DUT through a virtual interface.
+
+---
+
+### Monitor
+
+Passively observes DUT activity and broadcasts transactions through a UVM Analysis Port.
+
+---
+
+### Scoreboard
+
+Implements a queue-based golden reference model and automatically compares DUT output with expected values.
+
+---
+
+### Agent
+
+Bundles the Driver, Sequencer, and Monitor into a reusable verification component.
+
+---
+
+### Environment
+
+Instantiates and connects the Agent and Scoreboard.
+
+---
+
+### Test
+
+Creates the complete verification environment and executes constrained-random sequences.
+
+---
+
+## Verification Results
+
+| Verification Scenario              | Status |
+| ---------------------------------- | ------ |
+| Reset Verification                 | ✅      |
+| FIFO Write Operation               | ✅      |
+| FIFO Read Operation                | ✅      |
+| FIFO Data Ordering (FIFO Property) | ✅      |
+| Constrained Random Stimulus        | ✅      |
+| Queue-Based Golden Reference Model | ✅      |
+| Self-Checking Scoreboard           | ✅      |
+| Transaction-Level Modeling (TLM)   | ✅      |
+| Virtual Interface Communication    | ✅      |
+| Simultaneous Read/Write Operations | ✅      |
+
+The verification environment successfully validates FIFO functionality using constrained-random stimulus and a self-checking queue-based scoreboard. DUT outputs are automatically compared against a golden reference model, with all comparisons passing successfully during simulation.
+
+
+---
+
+## Simulation Environment
+
+| Tool        | Version                  |
+| ----------- | ------------------------ |
+| Language    | SystemVerilog            |
+| Methodology | UVM 1.2                  |
+| Simulator   | Siemens QuestaSim 2025.2 |
+| Platform    | EDA Playground           |
+
+---
+
+## Learning Outcomes
+
+This project demonstrates practical understanding of:
+
+* UVM 1.2 Methodology
+* Object-Oriented Testbench Development
+* Factory Registration
+* Virtual Interfaces
+* Transaction-Level Modeling (TLM)
+* Analysis Ports
+* Self-Checking Verification
+* Queue-Based Golden Reference Models
+* Constrained Random Verification
+* Reusable Verification Components
+* SystemVerilog Class-Based Verification
+
+---
+
+## Future Enhancements
+
+* Functional Coverage
+* Coverage-Driven Verification
+* SystemVerilog Assertions (SVA) Expansion
+* Virtual Sequences
+* Directed Regression Suite
+* Overflow and Underflow Verification
+* Continuous Integration (CI) Regression Flow
+
+---
+
+## Author
+
+**Rithik Mohanan**
+
+This project was developed to strengthen understanding of industry-standard ASIC verification methodologies using **SystemVerilog** and **UVM 1.2**, with emphasis on reusable verification components, constrained-random verification, and self-checking scoreboards.
+
+---
+
+## License
+
+This project is released under the **MIT License**.
+
+Feel free to use, modify, and learn from the code while providing appropriate attribution.
