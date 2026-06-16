@@ -1,0 +1,82 @@
+//---------------------------------------------------------
+// Project : UVM FIFO Verification
+// File    : fifo_driver.sv
+// Author  : Rithik Mohanan
+//
+// FIFO Driver
+//
+// Receives transactions from the sequencer and drives
+// them onto the FIFO interface at the DUT pins.
+//---------------------------------------------------------
+
+class fifo_driver extends uvm_driver #(fifo_transaction);
+
+  // Register driver with UVM factory
+  `uvm_component_utils(fifo_driver)
+
+  // Virtual interface used to access DUT signals
+  virtual fifo_if vif;
+
+  //-------------------------------------------------------
+  // Constructor
+  //-------------------------------------------------------
+  function new(string name, uvm_component parent);
+    super.new(name, parent);
+  endfunction
+
+  //-------------------------------------------------------
+  // Retrieve virtual interface from UVM config database
+  //-------------------------------------------------------
+  function void build_phase(uvm_phase phase);
+
+    super.build_phase(phase);
+
+    if(!uvm_config_db#(virtual fifo_if)::get(this, "", "vif", vif))
+      `uvm_fatal("DRV", "Virtual Interface Not Found")
+
+  endfunction
+
+  //-------------------------------------------------------
+  // Main stimulus driving process
+  //
+  // Transaction Flow:
+  //   1. Get transaction from sequencer
+  //   2. Drive interface signals
+  //   3. Hold for one clock cycle
+  //   4. Return interface to idle
+  //   5. Notify sequencer that transaction is complete
+  //-------------------------------------------------------
+  task run_phase(uvm_phase phase);
+
+    fifo_transaction txn;
+
+    // Wait until DUT reset is deasserted
+    wait(vif.rst == 0);
+
+    forever begin
+
+      // Receive next transaction from sequencer
+      seq_item_port.get_next_item(txn);
+
+      // Drive transaction on next clock edge
+      @(posedge vif.clk);
+
+      vif.din   <= txn.data;
+      vif.wr_en <= txn.wr_en;
+      vif.rd_en <= txn.rd_en;
+
+      // Keep transaction active for one clock cycle
+      @(posedge vif.clk);
+
+      // Return control signals to idle state
+      vif.wr_en <= 0;
+      vif.rd_en <= 0;
+
+      // Indicate transaction completion
+      seq_item_port.item_done();
+
+    end
+
+  endtask
+
+endclass

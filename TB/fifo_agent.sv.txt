@@ -1,0 +1,76 @@
+//---------------------------------------------------------
+// Project : UVM FIFO Verification
+// File    : fifo_agent.sv
+// Author  : Rithik Mohanan
+//
+// FIFO Agent
+//
+// Encapsulates the active verification components:
+//
+//   - Sequencer : Generates transaction flow
+//   - Driver    : Drives DUT inputs
+//   - Monitor   : Observes DUT activity
+//
+// Also distributes the virtual interface and connects
+// the sequencer to the driver.
+//---------------------------------------------------------
+
+class fifo_agent extends uvm_component;
+
+  // Register agent with UVM factory
+  `uvm_component_utils(fifo_agent)
+
+  // Agent sub-components
+  fifo_driver    drv;
+  fifo_monitor   mon;
+  fifo_sequencer seqr;
+
+  // Virtual interface shared by driver and monitor
+  virtual fifo_if vif;
+
+  //-------------------------------------------------------
+  // Constructor
+  //-------------------------------------------------------
+  function new(string name, uvm_component parent);
+    super.new(name, parent);
+  endfunction
+
+  //-------------------------------------------------------
+  // Build Phase
+  //
+  // 1. Retrieve virtual interface
+  // 2. Create agent sub-components
+  // 3. Pass interface to driver and monitor
+  //-------------------------------------------------------
+  function void build_phase(uvm_phase phase);
+
+    super.build_phase(phase);
+
+    if(!uvm_config_db#(virtual fifo_if)::get(this, "", "vif", vif))
+      `uvm_fatal("AGENT", "No VIF Found")
+
+    // Create agent components
+    drv  = fifo_driver::type_id::create("drv", this);
+    mon  = fifo_monitor::type_id::create("mon", this);
+    seqr = fifo_sequencer::type_id::create("seqr", this);
+
+    // Make virtual interface available to components
+    // that interact directly with the DUT
+    uvm_config_db#(virtual fifo_if)::set(this, "drv", "vif", vif);
+    uvm_config_db#(virtual fifo_if)::set(this, "mon", "vif", vif);
+
+  endfunction
+
+  //-------------------------------------------------------
+  // Connect Phase
+  //
+  // Connect sequencer and driver so transactions can
+  // flow from sequence -> sequencer -> driver.
+  //-------------------------------------------------------
+  function void connect_phase(uvm_phase phase);
+
+    drv.seq_item_port.connect(seqr.seq_item_export);
+
+  endfunction
+
+endclass

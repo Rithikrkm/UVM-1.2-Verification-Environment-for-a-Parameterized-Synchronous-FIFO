@@ -1,0 +1,29 @@
+//---------------------------------------------------------
+// Project : UVM FIFO Verification
+// File    : fifo_if.sv
+// Author  : Rithik Mohanan
+//
+// Interface connecting the FIFO DUT and UVM testbench.
+// Provides a shared set of signals that can be accessed
+// through a virtual interface by UVM components.
+//---------------------------------------------------------
+
+interface fifo_if;
+
+  // Clock and reset signals
+  logic clk;
+  logic rst;
+
+  // FIFO control signals
+  logic wr_en;
+  logic rd_en;
+
+  // FIFO data signals
+  logic [7:0] din;
+  logic [7:0] dout;
+
+  // FIFO status flags
+  logic full;
+  logic empty;
+
+endinterface

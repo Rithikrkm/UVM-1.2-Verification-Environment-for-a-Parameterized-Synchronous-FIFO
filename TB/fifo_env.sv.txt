@@ -1,0 +1,59 @@
+//---------------------------------------------------------
+// Project : UVM FIFO Verification
+// File    : fifo_env.sv
+// Author  : Rithik Mohanan
+//
+// FIFO Environment
+//
+// Top-level verification environment containing:
+//   - FIFO Agent
+//   - FIFO Scoreboard
+//
+// Responsible for connecting monitor transactions
+// to the scoreboard for checking.
+//---------------------------------------------------------
+
+class fifo_env extends uvm_component;
+
+  // Register environment with UVM factory
+  `uvm_component_utils(fifo_env)
+
+  // Verification components
+  fifo_agent      agent;
+  fifo_scoreboard sb;
+
+  //-------------------------------------------------------
+  // Constructor
+  //-------------------------------------------------------
+  function new(string name, uvm_component parent);
+    super.new(name, parent);
+  endfunction
+
+  //-------------------------------------------------------
+  // Build Phase
+  //
+  // Create all environment components.
+  //-------------------------------------------------------
+  function void build_phase(uvm_phase phase);
+
+    super.build_phase(phase);
+
+    agent = fifo_agent::type_id::create("agent", this);
+    sb    = fifo_scoreboard::type_id::create("sb", this);
+
+  endfunction
+
+  //-------------------------------------------------------
+  // Connect Phase
+  //
+  // Connect monitor analysis port to scoreboard so
+  // sampled DUT transactions can be checked against
+  // the reference model.
+  //-------------------------------------------------------
+  function void connect_phase(uvm_phase phase);
+
+    agent.mon.ap.connect(sb.imp);
+
+  endfunction
+
+endclass
