@@ -9,6 +9,12 @@
 
 </p>
 
+UVM 1.2 Verification Environment
+
+Parameterized Synchronous FIFO
+
+SystemVerilog | QuestaSim | Constrained Random | TLM | Self-Checking Scoreboard
+
 ## Overview
 
 This repository presents a complete **UVM 1.2 verification environment** for a **parameterized synchronous FIFO** designed in **SystemVerilog**.
