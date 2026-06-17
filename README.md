@@ -99,7 +99,7 @@ The FIFO supports simultaneous read and write operations while maintaining occup
 
 ---
 ## RTL Architecture
-<img width="876" height="644" alt="image" src="https://github.com/user-attachments/assets/62b41cef-f84c-4687-913f-9231c1be627f" />
+<img width="769" height="651" alt="image" src="https://github.com/user-attachments/assets/915c3b55-d5d2-4f36-b209-0605d1b98a6f" />
 
 
 ## UVM Verification Architecture
