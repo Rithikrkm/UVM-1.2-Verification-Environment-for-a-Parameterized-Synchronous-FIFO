@@ -98,6 +98,9 @@ The DUT is a parameterized synchronous FIFO supporting configurable data width a
 The FIFO supports simultaneous read and write operations while maintaining occupancy using an internal counter.
 
 ---
+## RTL Architecture
+<img width="876" height="644" alt="image" src="https://github.com/user-attachments/assets/62b41cef-f84c-4687-913f-9231c1be627f" />
+
 
 ## UVM Verification Architecture
 
